@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+dir=$(readlink -f $(dirname $(readlink -f $0)))
+name=$(basename $dir)
+cd $dir
+. ../functions.sh
+
+#build deb files if not exist
+if ! $(ls deb/squid3_3* 1> /dev/null 2>&1) || ! $(ls deb/squid3-common_3* 1> /dev/null 2>&1); then
+docker run --rm -i -v `pwd`/deb:/deb ubuntu:trusty << EOF
+apt-get update && apt-get install -y curl
+curl -SsL https://raw.githubusercontent.com/zubatyuk/docker-containers/master/aptproxy.sh | bash -s -- 
+apt-get install -y --no-install-recommends libssl-dev devscripts build-essential fakeroot
+apt-get -y build-dep squid3 openssl
+mkdir /src
+cd /src
+apt-get source squid3
+sed -i 's/--enable-ecap/--enable-ecap --enable-ssl --enable-ssl-crtd/' /src/squid3-3.3.8/debian/rules
+cd /src/squid3-3.3.8
+debuild -us -uc -b -j\$(nproc)
+cp /src/*.deb /deb
+chmod -R 777 /deb
+EOF
+fi
+
+cat Dockerfile | dockerfile_buildtime_aptproxy > Dockerfile.1
+docker build --rm -t $REGISTRY/$name -f Dockerfile.1 .
+rm Dockerfile.1
+

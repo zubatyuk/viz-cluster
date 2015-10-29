@@ -1,0 +1,19 @@
+#!/bin/bash
+
+dir=$(readlink -f $(dirname $(readlink -f $0)))
+name=$(basename $dir)
+
+cd $dir
+docker-compose stop
+docker-compose up -d 
+sleep 3
+
+case "${ClusterId}" in
+    viz1)
+      sudo pipework br-lan  -i eth0 ${name} 192.168.0.1/20
+      sudo pipework br-wan  -i eth1 ${name} 143.132.65.250/23@143.132.64.1 
+      sudo pipework br-wlan -i eth2 ${name} 192.168.16.2/20
+     ;;
+    viz2)
+      sudo pipework br-lan  -i eth0 ${name}  192.168.1.1/20@192.168.0.1
+esac

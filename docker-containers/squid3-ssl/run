@@ -1,0 +1,12 @@
+#!/bin/bash
+
+dir=$(readlink -f $(dirname $(readlink -f $0)))
+name=$(basename $dir)
+
+cd $dir
+
+docker-compose stop
+docker-compose up -d
+sleep 3
+docker logs squid3-ssl | sed -n '/BEGIN/,/END/p' > squid3.local.crt
+

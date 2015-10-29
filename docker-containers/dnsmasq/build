@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+dir=$(readlink -f $(dirname $(readlink -f $0)))
+name=$(basename $dir)
+cd $dir
+. ../functions.sh
+
+docker build --rm -t $REGISTRY/$name -f Dockerfile .
+
