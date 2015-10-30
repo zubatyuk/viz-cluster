@@ -1,0 +1,10 @@
+FROM vizsrv:5000/sage2-server
+MAINTAINER Roman Zubatyuk <zubatyuk@gmail.com>
+
+RUN    cd /opt/sage2 \
+    && git pull \
+    && npm run in
+
+EXPOSE  9090 9292
+WORKDIR /opt/sage2
+CMD     ["node", "server.js"]

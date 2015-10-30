@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+dir=$(readlink -f $(dirname $(readlink -f $0)))
+name=$(basename $dir)
+cd $dir
+. ../functions.sh
+
+cat Dockerfile | dockerfile_buildtime_aptproxy > Dockerfile.1
+dockerfile_runtime_squid >> Dockerfile.1
+docker build --rm -t registry.local:5000/$name -f Dockerfile.1 .
+rm Dockerfile.1 squid3.local.crt
+
